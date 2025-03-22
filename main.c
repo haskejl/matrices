@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define CLEARSCREEN printf("\x1B[3J\x1B[1;1H");
+
 #define RESET "\x1B[0m"
 #define BRIGHT "\x1B[1m"
 #define UNDERLINE "\x1B[4m"
@@ -58,7 +60,7 @@ void setNCols(struct Matrix* m) {
 
 void setMatrixData(struct Matrix* m) {
 	printf("Input your matrix with spaces between the numbers.\n");
-	printf("You may hit return after each row.\n");
+	printf("Hit return after each row.\n");
 	for(int i=0; i<m->mRows; i++) {
 		for(int j=0; j<m->nCols; j++) {
 			scanf("%lf", &m->data[i][j]);
@@ -98,17 +100,17 @@ void addMatrices(struct Matrix* m1, struct Matrix* m2, struct Matrix* result) {
 int main(int argc, char** argv) {
     struct Matrix m1;
     struct Matrix m2;
-	system("clear");
+	CLEARSCREEN
     
 	printf("Enter the dimensions of the first matrix.\n");
 	setMRows(&m1);
 	setNCols(&m1);
-	system("clear");
+	CLEARSCREEN
 
 	printf("Enter the dimensions of the second matrix.\n");
 	setMRows(&m2);
 	setNCols(&m2);
-	system("clear");
+	CLEARSCREEN
     
     printf("The first matrix has %d rows and %d columns.\n", 
 			m1.mRows, 
