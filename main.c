@@ -18,6 +18,21 @@ void flushInput() {
 	}
 }
 
+void allocateMatrixMemory(struct Matrix* m) {
+	m->data = (double**)malloc(m->mRows*sizeof(double*));
+
+	for(int i=0; i<m->mRows; i++) {
+		m->data[i] = (double*)malloc(m->nCols*sizeof(double));
+	}
+}
+
+void freeMatrixMemory(struct Matrix* m) {
+	for(int i=0; i<m->mRows; i++) {
+		free(m->data[i]);
+	}
+	free(m->data);
+}
+
 void setMRows(struct Matrix* m) {
     printf("Input the number of rows (2-10): ");
     scanf("%d", &m->mRows);
@@ -60,9 +75,30 @@ void printMatrix(struct Matrix* m) {
 	}
 }
 
+void addMatrices(struct Matrix* m1, struct Matrix* m2, struct Matrix* result) {
+	if(m1->mRows != m2->mRows || m1->nCols != m2->nCols) {
+		printf("Matrices are incompatable for addition, no action performed.");
+		return;
+	}
+	if(result->mRows != m1->mRows || result->nCols != m1->nCols) {
+		// This might not be the most performant, but it's the simplest
+		freeMatrixMemory(result);
+		result->mRows = m1->mRows;
+		result->nCols = m1->nCols;
+		allocateMatrixMemory(result);
+	}
+
+	for(int i=0; i<m1->mRows; i++) {
+		for(int j=0; j<m1->nCols; j++) {
+			result->data[i][j] = m1->data[i][j] + m2->data[i][j];
+		}
+	}
+}
+
 int main(int argc, char** argv) {
     struct Matrix m1;
     struct Matrix m2;
+	system("clear");
     
 	printf("Enter the dimensions of the first matrix.\n");
 	setMRows(&m1);
@@ -81,17 +117,10 @@ int main(int argc, char** argv) {
 			m2.mRows, 
 			m2.nCols);
 
-	m1.data = (double**)malloc(sizeof(double*)*m1.mRows);
-	m2.data = (double**)malloc(sizeof(double*)*m2.mRows);
+	allocateMatrixMemory(&m1);
+	allocateMatrixMemory(&m2);
 
-	for(int i=0; i<m1.mRows; i++) {
-		m1.data[i] = (double*)malloc(sizeof(double)*m1.nCols);
-	}
-	for(int i=0; i<m2.mRows; i++) {
-		m2.data[i] = (double*)malloc(sizeof(double)*m2.nCols);
-	}
-
-	printf(UNDERLINE "\nSetup your matrices.\n" RESET);
+	printf(BRIGHT "\nSetup your matrices.\n" RESET);
 	printf(UNDERLINE "Matrix 1:\n" RESET);
 	setMatrixData(&m1);
 
@@ -105,5 +134,7 @@ int main(int argc, char** argv) {
 	printf(UNDERLINE "\nMatrix 2:\n" RESET);
 	printMatrix(&m2);
 
+	freeMatrixMemory(&m1);
+	freeMatrixMemory(&m2);
     return 0;
 }
