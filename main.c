@@ -24,7 +24,7 @@ void allocateMatrixMemory(struct Matrix* m) {
 	m->data = (double**)malloc(m->mRows*sizeof(double*));
 
 	for(int i=0; i<m->mRows; i++) {
-		m->data[i] = (double*)calloc(m->nCols,sizeof(double));
+		m->data[i] = (double*)calloc(m->nCols, sizeof(double));
 	}
 }
 
