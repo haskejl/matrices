@@ -143,7 +143,9 @@ void transposeMatrix(struct Matrix* m1) {
 	}
 
 	freeMatrixMemory(m1);
-	m1 = &tmp;
+	m1->data = tmp.data;
+	m1->mRows = tmp.mRows;
+	m1->nCols = tmp.nCols;
 }
 
 int main(int argc, char** argv) {
@@ -197,6 +199,10 @@ int main(int argc, char** argv) {
 	if(multiplyMatrices(&m1, &m2, &result) == 0) {
 		printMatrix(&result);
 	}
+
+	printf(UNDERLINE "\nTransposed:\n" RESET);
+	transposeMatrix(&m1);
+	printMatrix(&m1);
 
 	freeMatrixMemory(&m1);
 	freeMatrixMemory(&m2);
