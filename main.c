@@ -24,7 +24,7 @@ void allocateMatrixMemory(struct Matrix* m) {
 	m->data = (double**)malloc(m->mRows*sizeof(double*));
 
 	for(int i=0; i<m->mRows; i++) {
-		m->data[i] = (double*)malloc(m->nCols*sizeof(double));
+		m->data[i] = (double*)calloc(m->nCols,sizeof(double));
 	}
 }
 
@@ -77,12 +77,17 @@ void printMatrix(struct Matrix* m) {
 	}
 }
 
-void addMatrices(struct Matrix* m1, struct Matrix* m2, struct Matrix* result) {
+int addMatrices(struct Matrix* m1, struct Matrix* m2, struct Matrix* result) {
 	if(m1->mRows != m2->mRows || m1->nCols != m2->nCols) {
-		printf("Matrices are incompatable for addition, no action performed.");
-		return;
+		printf("Matrices are incompatable for addition, no action performed.\n");
+		return -1;
 	}
-	if(result->mRows != m1->mRows || result->nCols != m1->nCols) {
+	if(result->data == NULL) {
+		result->mRows = m1->mRows;
+		result->nCols = m1->nCols;
+		allocateMatrixMemory(result);
+	}
+	else if(result->mRows != m1->mRows || result->nCols != m1->nCols) {
 		// This might not be the most performant, but it's the simplest
 		freeMatrixMemory(result);
 		result->mRows = m1->mRows;
@@ -95,9 +100,54 @@ void addMatrices(struct Matrix* m1, struct Matrix* m2, struct Matrix* result) {
 			result->data[i][j] = m1->data[i][j] + m2->data[i][j];
 		}
 	}
+	return 0;
+}
+
+int multiplyMatrices(struct Matrix* m1, struct Matrix* m2, struct Matrix* result) {
+	if(m1->nCols != m2->mRows) {
+		printf("Matrices are incompatable for multiplication, no action performed.\n");
+		return -1;
+	}
+	if(result->data == NULL) {
+		result->mRows = m1->mRows;
+		result->nCols = m2->nCols;
+		allocateMatrixMemory(result);
+	}
+	else if(result->mRows != m1->mRows || result->nCols != m2->nCols) {
+		freeMatrixMemory(result);
+		result->mRows = m1->mRows;
+		result->nCols = m2->nCols;
+		allocateMatrixMemory(result);
+	}
+
+	for(int m=0; m<m1->mRows; m++) {
+		for(int n=0; n<m1->nCols; n++) {
+			for(int k=0; k<m2->nCols; k++) {
+				result->data[m][k] += m1->data[m][n] * m2->data[n][k];
+			}
+		}
+	}
+	return 0;
+}
+
+void transposeMatrix(struct Matrix* m1) {
+	struct Matrix tmp;
+	tmp.mRows = m1->nCols;
+	tmp.nCols = m1->mRows;
+	allocateMatrixMemory(&tmp);
+
+	for(int i=0; i<m1->mRows; i++) {
+		for(int j=0; j<m1->nCols; j++) {
+			tmp.data[j][i] = m1->data[i][j];
+		}
+	}
+
+	freeMatrixMemory(m1);
+	m1 = &tmp;
 }
 
 int main(int argc, char** argv) {
+	printf(RESET);
     struct Matrix m1;
     struct Matrix m2;
 	CLEARTERMINAL
@@ -135,6 +185,18 @@ int main(int argc, char** argv) {
 
 	printf(UNDERLINE "\nMatrix 2:\n" RESET);
 	printMatrix(&m2);
+
+	printf(UNDERLINE "\nAdded:\n" RESET);
+	if(addMatrices(&m1, &m2, &m1) == 0) {
+		printMatrix(&m1);
+	}
+
+	printf(UNDERLINE "\nMultiplied:\n" RESET);
+	struct Matrix result;
+	result.data = NULL;
+	if(multiplyMatrices(&m1, &m2, &result) == 0) {
+		printMatrix(&result);
+	}
 
 	freeMatrixMemory(&m1);
 	freeMatrixMemory(&m2);
